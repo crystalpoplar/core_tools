@@ -39,9 +39,3 @@ def create_logger(
     handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
     configured_logger.addHandler(handler)
     return configured_logger
-
-
-mainLog = create_logger("core_tools", "core_tools.log")
-main_log = mainLog
-
-__all__ = ["create_logger", "mainLog", "main_log"]

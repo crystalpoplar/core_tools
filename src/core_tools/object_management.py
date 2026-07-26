@@ -4,8 +4,7 @@ import traceback
 from . import file_management
 from . import logger
 
-mainLog = logger.mainLog
-
+LOG = logger.create_logger("core_tools", "core_tools.log")
 
 def make_list_comma_separated(list):
     """
@@ -106,7 +105,7 @@ def get_values_from_json(keys, json_file_path):
     return getValuesFromJson(keys, json_file_path)
 
 
-def stringFormatter(string: str) -> str:
+def stringFormatter(string: str, log: logger.create_logger = LOG) -> str:
     """
     Replace placeholders in the input string:
       - {functionName} -> call a zero-argument function with that name from globals() and substitute its return value
@@ -125,7 +124,7 @@ def stringFormatter(string: str) -> str:
     pass_num = 0
 
     if not isinstance(string, str):
-        mainLog.debug("stringFormatter received non-str input; converting to str")
+        log.debug("stringFormatter received non-str input; converting to str")
         string = str(string)
 
     func_pattern = re.compile(r'\{([^{}]+)\}')
@@ -151,24 +150,24 @@ def stringFormatter(string: str) -> str:
         func_name = name.split('(')[0].strip()
         func = globals().get(func_name)
         if not callable(func):
-            mainLog.warning(f"stringFormatter: function '{func_name}' not found or not callable")
+            log.warning(f"stringFormatter: function '{func_name}' not found or not callable")
             return match.group(0)
         try:
             result = func()
             formatted = _format_value(result)
-            mainLog.debug(f"stringFormatter: replaced function {{{name}}} -> '{formatted}'")
+            log.debug(f"stringFormatter: replaced function {{{name}}} -> '{formatted}'")
             return formatted
         except Exception as e:
-            mainLog.error(f"stringFormatter: error calling function '{func_name}': {e}")
-            mainLog.error(traceback.format_exc())
+            log.error(f"stringFormatter: error calling function '{func_name}': {e}")
+            log.error(traceback.format_exc())
             return match.group(0)
 
-    def _resolve_dict_lookup(dict_name: str, keys):
+    def _resolve_dict_lookup(dict_name: str, keys, log: logger.create_logger = LOG):
         """Load a JSON file and traverse nested keys."""
         try:
             jsonData = file_management.getJsonDict(f"{dict_name}.json")
         except Exception as e:
-            mainLog.error(f"stringFormatter: error loading JSON '{dict_name}.json': {e}")
+            log.error(f"stringFormatter: error loading JSON '{dict_name}.json': {e}")
             return None
         data = jsonData
         for k in keys:
@@ -205,11 +204,11 @@ def stringFormatter(string: str) -> str:
                 parts = content.split('.')
                 val = _resolve_global_lookup(parts)
             formatted = _format_value(val)
-            mainLog.debug(f"stringFormatter: replaced lookup [{content}] -> '{formatted}'")
+            log.debug(f"stringFormatter: replaced lookup [{content}] -> '{formatted}'")
             return formatted
         except Exception as e:
-            mainLog.error(f"stringFormatter: error resolving lookup '[{content}]': {e}")
-            mainLog.error(traceback.format_exc())
+            log.error(f"stringFormatter: error resolving lookup '[{content}]': {e}")
+            log.error(traceback.format_exc())
             return match.group(0)
 
     previous = None
@@ -218,19 +217,19 @@ def stringFormatter(string: str) -> str:
         try:
             string = func_pattern.sub(_replace_function, string)
         except Exception as e:
-            mainLog.error(f"stringFormatter: error during function replacements: {e}")
-            mainLog.error(traceback.format_exc())
+            log.error(f"stringFormatter: error during function replacements: {e}")
+            log.error(traceback.format_exc())
             break
         try:
             string = lookup_pattern.sub(_replace_lookup, string)
         except Exception as e:
-            mainLog.error(f"stringFormatter: error during lookup replacements: {e}")
-            mainLog.error(traceback.format_exc())
+            log.error(f"stringFormatter: error during lookup replacements: {e}")
+            log.error(traceback.format_exc())
             break
         pass_num += 1
 
     if pass_num == max_passes:
-        mainLog.warning("stringFormatter: maximum passes reached; result may still contain unresolved placeholders")
+        log.warning("stringFormatter: maximum passes reached; result may still contain unresolved placeholders")
 
     return string
 
@@ -271,7 +270,7 @@ def execute_function_in_string(text):
     return executeFunctionInString(text)
 
 
-def largeSentenceDisplay(text, maxLength=190):
+def largeSentenceDisplay(text, maxLength=190, log: logger.create_logger = LOG):
     """
     Wraps long text lines by breaking them at a maximum length.
 
@@ -285,14 +284,14 @@ def largeSentenceDisplay(text, maxLength=190):
     Returns:
         str: The wrapped text with newlines inserted to enforce line length limits.
     """
-    mainLog.debug(f"largeSentenceDisplay: wrapping text of length {len(text)} with maxLength={maxLength}")
+    log.debug(f"largeSentenceDisplay: wrapping text of length {len(text)} with maxLength={maxLength}")
 
     if not isinstance(text, str):
-        mainLog.warning(f"largeSentenceDisplay: received non-string input of type {type(text)}, converting to string")
+        log.warning(f"largeSentenceDisplay: received non-string input of type {type(text)}, converting to string")
         text = str(text)
 
     if maxLength <= 0:
-        mainLog.error(f"largeSentenceDisplay: invalid maxLength={maxLength}, using default 190")
+        log.error(f"largeSentenceDisplay: invalid maxLength={maxLength}, using default 190")
         maxLength = 190
 
     textList = text.split('\n')
@@ -309,29 +308,10 @@ def largeSentenceDisplay(text, maxLength=190):
 
     newText = '\n'.join(result_lines) + '\n'
 
-    mainLog.debug(f"largeSentenceDisplay: output has {len(result_lines)} lines")
+    log.debug(f"largeSentenceDisplay: output has {len(result_lines)} lines")
     return newText
 
 
 def large_sentence_display(text, max_length=190):
     """Preferred snake_case alias for largeSentenceDisplay."""
     return largeSentenceDisplay(text, maxLength=max_length)
-
-
-__all__ = [
-    "executeFunctionInString",
-    "execute_function_in_string",
-    "getValuesFromJson",
-    "get_values_from_json",
-    "largeSentenceDisplay",
-    "large_sentence_display",
-    "list2csv",
-    "list_to_csv",
-    "mainLog",
-    "makeTextJson",
-    "make_list_comma_separated",
-    "make_list_comma_separated_text",
-    "make_text_json",
-    "stringFormatter",
-    "string_formatter",
-]
