@@ -4,10 +4,10 @@ from pathlib import Path
 
 
 def _build_directories() -> dict[str, str]:
-    app_data = os.environ.get("appdata")
-    base_path = Path(app_data) if app_data else Path("/")
+    app_data = os.environ.get("APPDATA") or os.environ.get("XDG_DATA_HOME")
+    base_path = (Path(app_data) if app_data else (Path.home() / ".local" / "share")) / "core_tools"
     return {
-        "main_dir": str(base_path),
+        "main_dir": str(base_path) + os.sep,
         "indicator_dir": str(base_path / "indicators") + os.sep,
         "inputs_dir": str(base_path / "inputs") + os.sep,
         "images_dir": str(base_path / "images") + os.sep,
