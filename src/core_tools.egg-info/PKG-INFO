@@ -1,3 +1,32 @@
+Metadata-Version: 2.4
+Name: core-tools
+Version: 0.1.0
+Summary: Core utility helpers for logging, file management, and object formatting.
+Author: Core Tools Contributors
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/your-org/core_tools
+Project-URL: Repository, https://github.com/your-org/core_tools
+Project-URL: Issues, https://github.com/your-org/core_tools/issues
+Project-URL: Changelog, https://github.com/your-org/core_tools/blob/main/CHANGELOG.md
+Keywords: utilities,logging,json,helpers
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: concurrent-log-handler>=0.9.24
+Provides-Extra: test
+Requires-Dist: pytest>=8; extra == "test"
+Provides-Extra: dev
+Requires-Dist: build>=1.2.2; extra == "dev"
+Requires-Dist: twine>=5.1.1; extra == "dev"
+Dynamic: license-file
+
 # core_tools
 Python utilities for logging, file management, and object formatting.
 
@@ -66,31 +95,5 @@ python -m twine upload dist/*
 ```
 
 Before each release, update the package version in `pyproject.toml` and `src/core_tools/__init__.py`, then add release notes to `CHANGELOG.md`.
-
-### GitHub Actions Publish Flow
-
-This repository includes a publish workflow at `.github/workflows/publish.yml`.
-
-What it does:
-- Builds sdist and wheel
-- Runs metadata validation with `twine check`
-- Publishes to PyPI on GitHub Release publish
-- Supports manual publish to TestPyPI via `workflow_dispatch`
-
-Setup required once:
-1. In PyPI, create a Trusted Publisher for this project:
-	- Owner: `crystalpoplar`
-	- Repository: `core_tools`
-	- Workflow: `publish.yml`
-	- Environment: `pypi`
-2. In TestPyPI, create the same Trusted Publisher with environment `testpypi`.
-3. In GitHub repo settings, create environments named `pypi` and `testpypi`.
-
-Release usage:
-1. Bump version in `pyproject.toml` and `src/core_tools/__init__.py`.
-2. Commit and push to `main`.
-3. Create and publish a GitHub Release (for example `v0.1.1`).
-4. Workflow publishes package to PyPI automatically.
-
 
 
