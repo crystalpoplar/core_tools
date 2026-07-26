@@ -9,7 +9,7 @@ from . import logger
 
 LOG = logger.create_logger("core_tools.file_management", "file_management.log")
 
-def getJsonDict(filename, input=False):
+def get_json_dict(filename, input=False, path: str = value_setter.main_dir):
     """
     Retrieves the JSON data from a file.
 
@@ -21,22 +21,18 @@ def getJsonDict(filename, input=False):
         dict: The JSON data.
     """
     if input:
-        extfilename = value_setter.inputs_dir + filename
+        extfilename = os.path.join(value_setter.inputs_dir, filename)
+    elif path:
+        extfilename = os.path.join(path, filename)
     else:
-        extfilename = value_setter.main_dir + filename
+        extfilename = os.path.join(value_setter.main_dir, filename)
     if not os.path.isfile(extfilename):
-        updateJsonFile({}, filename)
+        update_json_dict({}, extfilename)
     with open(extfilename) as f:
         data = json.load(f)
     return data
 
-
-def get_json_dict(filename, input=False):
-    """Preferred snake_case API for getJsonDict."""
-    return getJsonDict(filename, input=input)
-
-
-def updateJsonFile(new_data, filepath, log: logger.create_logger = LOG):
+def update_json_dict(new_data, filepath, log: logger.create_logger = LOG, archive: bool = True):
     """
     Updates a JSON file with new data.
 
@@ -47,12 +43,13 @@ def updateJsonFile(new_data, filepath, log: logger.create_logger = LOG):
     Returns:
         bool: True if the operation succeeds, False otherwise.
     """
-    archiveFiles(value_setter.main_dir + filepath)
+    if archive:
+        archive_files(os.path.join(value_setter.main_dir, filepath))
     try:
         if value_setter.main_dir in filepath:
             dir_path = os.path.dirname(filepath)
         else:
-            dir_path = os.path.dirname(value_setter.main_dir + filepath)
+            dir_path = os.path.dirname(os.path.join(value_setter.main_dir, filepath))
         if not os.path.isdir(dir_path):
             log.info(f"Creating directory: {dir_path}")
             os.makedirs(dir_path)
@@ -62,7 +59,7 @@ def updateJsonFile(new_data, filepath, log: logger.create_logger = LOG):
             json.dump(new_data, jsonFile)
         jsonFile.close()
 
-        shutil.copyfile(tempfile.name, value_setter.main_dir + filepath)
+        shutil.copyfile(tempfile.name, os.path.join(value_setter.main_dir, filepath))
         tempfile.close()
         os.remove(tempfile.name)
         log.info(f"Updated JSON file: {filepath}")
@@ -73,13 +70,7 @@ def updateJsonFile(new_data, filepath, log: logger.create_logger = LOG):
     else:
         return True
 
-
-def update_json_file(new_data, filepath):
-    """Preferred snake_case API for updateJsonFile."""
-    return updateJsonFile(new_data, filepath)
-
-
-def archiveFiles(fileName, archiveCount=10, log: logger.create_logger = LOG):
+def archive_files(fileName, archiveCount=10, log: logger.create_logger = LOG):
     """
     Archives the specified file by keeping up to `archiveCount` versions.
     Older archives are shifted up by one index, and the latest file is saved as archive 0.
@@ -96,8 +87,8 @@ def archiveFiles(fileName, archiveCount=10, log: logger.create_logger = LOG):
     while archiveCount >= 0:
         base_name, ext = os.path.splitext(fileName)
         ext = ext.lstrip(".")
-        archiveFileName = value_setter.archive_dir + base_name + str(archiveCount) + "." + ext
-        newArchiveFileName = value_setter.archive_dir + base_name + str(archiveCount + 1) + "." + ext
+        archiveFileName = os.path.join(value_setter.archive_dir, f"{base_name}{archiveCount}.{ext}")
+        newArchiveFileName = os.path.join(value_setter.archive_dir, f"{base_name}{archiveCount + 1}.{ext}")
         if os.path.isfile(archiveFileName):
             if archiveCount + 1 <= maxArchives:
                 try:
@@ -114,7 +105,7 @@ def archiveFiles(fileName, archiveCount=10, log: logger.create_logger = LOG):
             if not os.path.isdir(dir_path):
                 log.info(f"Creating archive directory: {dir_path}")
                 os.makedirs(dir_path)
-            archive0 = value_setter.archive_dir + relative_path.rsplit(".", 1)[0] + "0." + fileName.rsplit(".", 1)[1]
+            archive0 = os.path.join(value_setter.archive_dir, relative_path.rsplit(".", 1)[0] + "0." + fileName.rsplit(".", 1)[1])
             try:
                 shutil.copyfile(fileName, archive0)
                 log.info(f"Archived {fileName} to {archive0}")
@@ -123,8 +114,3 @@ def archiveFiles(fileName, archiveCount=10, log: logger.create_logger = LOG):
     except Exception as e:
         log.error(f"Error during archiving process for {fileName}: {e}")
         log.error(traceback.format_exc())
-
-
-def archive_files(file_name, archive_count=10):
-    """Preferred snake_case API for archiveFiles."""
-    return archiveFiles(file_name, archiveCount=archive_count)

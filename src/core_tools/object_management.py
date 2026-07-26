@@ -62,9 +62,9 @@ def makeTextJson(textStr):
     Returns:
         str: The JSON string.
     """
-    while textStr[0] != '{' and len(textStr) > 0:
+    while len(textStr) > 0 and textStr[0] != '{':
         textStr = textStr[1:]
-    while textStr[-1] != '}' and len(textStr) > 0:
+    while len(textStr) > 0 and textStr[-1] != '}':
         textStr = textStr[:-1]
     return textStr
 

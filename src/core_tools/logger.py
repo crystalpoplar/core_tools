@@ -17,6 +17,7 @@ def create_logger(
     output_dir: str = value_setter.logging_dir,
 ) -> logging.Logger:
     """Create a rotating file logger."""
+    value_setter.create_dirs()  # Ensure directories exist before creating the logger
     os.makedirs(output_dir, exist_ok=True)
 
     configured_logger = logging.getLogger(name)

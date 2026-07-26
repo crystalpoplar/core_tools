@@ -26,6 +26,10 @@ archive_dir = _DIRECTORIES["archive_dir"]
 logging_dir = _DIRECTORIES["logging_dir"]
 
 
+# Ensure the base application directory exists before attaching a FileHandler.
+os.makedirs(main_dir.rstrip("\\/"), exist_ok=True)
+
+
 logging.basicConfig(
     filename=os.path.join(main_dir, "directory_creation.log"),
     level=logging.INFO,
@@ -51,6 +55,3 @@ def create_dirs() -> None:
 def createDirs() -> None:
     """Backward-compatible alias for older callers."""
     create_dirs()
-
-
-create_dirs()

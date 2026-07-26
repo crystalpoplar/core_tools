@@ -3,6 +3,7 @@
 import logging
 import os
 import tempfile
+import shutil
 import unittest
 
 import concurrent_log_handler
@@ -20,12 +21,12 @@ class TestCreateLogger(unittest.TestCase):
     def tearDown(self):
         for name in list(logging.Logger.manager.loggerDict.keys()):
             log = logging.getLogger(name)
-            log.handlers.clear()
-        for f in os.listdir(self.temp_dir):
-            try:
-                os.remove(os.path.join(self.temp_dir, f))
-            except OSError:
-                pass
+            for handler in list(log.handlers):
+                try:
+                    handler.close()
+                finally:
+                    log.removeHandler(handler)
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_returns_logger_instance(self):
         result = logger.create_logger("test_instance", self.log_file, output_dir=self.temp_dir)
