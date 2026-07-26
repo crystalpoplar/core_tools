@@ -76,6 +76,7 @@ What it does:
 - Runs metadata validation with `twine check`
 - Publishes to PyPI on GitHub Release publish
 - Supports manual publish to TestPyPI via `workflow_dispatch`
+- Disables release attestations for now, which avoids the transparency-log upload path that was failing
 
 Setup required once:
 1. In PyPI, create a Trusted Publisher for this project:
